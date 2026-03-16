@@ -1,0 +1,155 @@
+{
+  "design_system": {
+    "name": "I CAN SCHOOL - Safety & Certification Portal",
+    "theme_strategy": "Material Design 3 (Material You) - Health & Education",
+    "core_principles": [
+      "Surface over Border: Use tonal differences to separate layers, not strokes.",
+      "Extreme Roundness: 28px+ corner radius for containers, Pill shape for buttons.",
+      "Tonal Palettes: Green-based generative color system.",
+      "Professional & Human: Educational but not childish. Safe but not sterile."
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "headings": "\"Manrope\", sans-serif",
+      "body": "\"Inter\", sans-serif",
+      "monospace": "\"JetBrains Mono\", monospace"
+    },
+    "scaling": {
+      "display_large": "text-6xl font-bold tracking-tight leading-tight",
+      "display_medium": "text-5xl font-bold tracking-tight",
+      "display_small": "text-4xl font-bold tracking-tight",
+      "headline_large": "text-3xl font-semibold leading-snug",
+      "headline_medium": "text-2xl font-semibold",
+      "body_large": "text-lg leading-relaxed",
+      "body_medium": "text-base leading-relaxed text-slate-600",
+      "label_large": "text-sm font-medium uppercase tracking-wider text-slate-500"
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "base": "#006C4C",
+        "container": "#89F8C6",
+        "on_container": "#002114",
+        "hover": "#005239"
+      },
+      "secondary": {
+        "base": "#4D6357",
+        "container": "#D0E8D8",
+        "on_container": "#092016"
+      },
+      "tertiary": {
+        "base": "#3C6472",
+        "container": "#C0E9FA",
+        "on_container": "#001F28"
+      },
+      "error": {
+        "base": "#BA1A1A",
+        "container": "#FFDAD6",
+        "on_container": "#410002"
+      },
+      "background": "#FBFDF9",
+      "surface": {
+        "base": "#FBFDF9",
+        "variant": "#DBE5DE",
+        "on_variant": "#404944",
+        "level1": "#F0F5F1",
+        "level2": "#E8F0EB",
+        "level3": "#E0EBE5"
+      },
+      "outline": "#707973"
+    },
+    "usage_rules": [
+      "Do NOT use pure black (#000000). Use #191C1A.",
+      "Primary Color Usage: Only for FABs (Floating Action Buttons), Active States, and Primary CTAs.",
+      "Surface Hierarchy: Use Surface Level 1/2/3 for cards instead of shadows or borders.",
+      "Text on Primary: Always use #FFFFFF or the 'on_primary' token."
+    ]
+  },
+  "layout_strategies": {
+    "admin_dashboard": {
+      "grid_type": "Bento Grid (High Density)",
+      "gap": "gap-4",
+      "structure": [
+        "Header: Full width, transparent with scroll scrim",
+        "Stats Row: 4-column grid (Surface Level 1 cards)",
+        "Main Content: 2:1 split (Analytics Chart vs Activity Feed)"
+      ]
+    },
+    "path_builder": {
+      "type": "Drag and Drop Canvas",
+      "background": "Dots pattern or Grid pattern (subtle)",
+      "card_style": "Surface Level 2, rounded-xl, drag-handle visible"
+    },
+    "immersive_reader": {
+      "type": "Focus Mode",
+      "width": "max-w-2xl mx-auto",
+      "typography": "prose prose-lg prose-green",
+      "distractions": "Hidden sidebar, minimal header"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "rounded-full bg-[#006C4C] text-white hover:bg-[#005239] shadow-md hover:shadow-lg transition-all px-8 py-3",
+      "secondary": "rounded-full bg-[#D0E8D8] text-[#092016] hover:bg-[#BCE0C8] px-8 py-3",
+      "ghost": "rounded-full hover:bg-[#F0F5F1] text-[#006C4C] px-6"
+    },
+    "cards": {
+      "base": "rounded-[28px] bg-[#F0F5F1] p-6 transition-all hover:bg-[#E8F0EB] border-none",
+      "interactive": "rounded-[24px] bg-white shadow-sm hover:shadow-md cursor-pointer group"
+    },
+    "inputs": {
+      "style": "filled",
+      "classes": "rounded-t-lg rounded-b-none border-b-2 border-[#707973] bg-[#DBE5DE]/30 focus:border-[#006C4C] focus:bg-[#DBE5DE]/50 px-4 py-3 h-auto"
+    },
+    "navigation": {
+      "sidebar": "bg-[#FBFDF9] border-r-0 w-64 p-4 gap-2",
+      "active_link": "bg-[#C0E9FA] text-[#001F28] rounded-full font-bold",
+      "inactive_link": "text-[#404944] hover:bg-[#F0F5F1] rounded-full"
+    },
+    "status_pills": {
+      "success": "bg-[#D0E8D8] text-[#092016] rounded-full px-3 py-1 text-xs font-bold uppercase",
+      "warning": "bg-[#FFDAD6] text-[#410002] rounded-full px-3 py-1 text-xs font-bold uppercase",
+      "neutral": "bg-[#E0EBE5] text-[#404944] rounded-full px-3 py-1 text-xs font-bold uppercase"
+    }
+  },
+  "assets": {
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 2px, rounded joins",
+      "color": "Text-Slate-600 or Brand Primary"
+    },
+    "image_urls": {
+      "login_hero": {
+        "url": "https://images.unsplash.com/photo-1766475553047-fa5ae86d1905?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwyfHxmaXJlJTIwc2FmZXR5JTIwZXh0aW5ndWlzaGVyJTIwaGFsbHdheXxlbnwwfHx8fDE3NzM2OTU3MDN8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "School Hallway Perspective",
+        "description": "Clean, bright school hallway for login background"
+      },
+      "cpr_training": {
+        "url": "https://images.unsplash.com/photo-1771946428523-dd98df0ca9a6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwxfHxmaXJzdCUyMGFpZCUyMHRyYWluaW5nJTIwY3ByJTIwZHVtbXl8ZW58MHx8fHwxNzczNjk1NzAyfDA&ixlib=rb-4.1.0&q=85",
+        "alt": "CPR Training Session",
+        "description": "Staff practicing CPR"
+      },
+      "teacher_interaction": {
+        "url": "https://images.unsplash.com/photo-1758270704226-db897b180243?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwzfHxzY2hvb2wlMjB0ZWFjaGVyJTIwY2xhc3Nyb29tJTIwaW50ZXJhY3Rpb258ZW58MHx8fHwxNzczNjk1NzAyfDA&ixlib=rb-4.1.0&q=85",
+        "alt": "Teacher in Classroom",
+        "description": "Teacher interacting with students"
+      }
+    }
+  },
+  "universal_guidelines": [
+    "NO BORDERS: Use background color differences (Surface 1 vs Surface 2) to define areas.",
+    "ROUND EVERYTHING: 28px radius is the minimum for containers. 12px for small inner elements.",
+    "RHYTHM: Use multiples of 8px for spacing (p-4, p-6, p-8).",
+    "ANIMATION: All interactive elements must have a 'scale-95' click effect and 'bg-opacity' hover effect.",
+    "ACCESSIBILITY: Ensure text contrast on light green backgrounds is sufficient (Use Dark Green text)."
+  ],
+  "instructions_to_main_agent": [
+    "Install 'lucide-react', 'recharts', 'framer-motion', 'clsx', 'tailwind-merge' if not present.",
+    "Overwrite tailwind.config.js with the provided colors.",
+    "Create a 'Layout' component that handles the Sidebar and Topbar structure.",
+    "Use 'sonner' for all toast notifications.",
+    "For the Path Builder, use '@dnd-kit/core' or similar for drag-and-drop functionality."
+  ]
+}
