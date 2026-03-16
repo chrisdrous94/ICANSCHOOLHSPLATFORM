@@ -26,19 +26,22 @@ Build a complete, production-ready "I CAN SCHOOL: Health & Safety Training & Cer
 - Compliance expiry tracking (365-day default)
 
 ## What's Been Implemented (March 2026)
-- [x] Complete Material Design 3 UI with green tonal palette
-- [x] Login page with hero section and demo credentials
+- [x] ICan School branding with official logo from icanskill.com
+- [x] Professional clean design with orange (#FF8100) accent matching ICan brand
+- [x] Complete Material Design inspired UI with white surfaces and subtle borders
+- [x] Login page with ICan branding, dark hero section, and demo credentials
 - [x] Admin Dashboard with analytics (bar chart, pie chart, compliance overview)
-- [x] Admin Path Builder with drag-and-drop module ordering
-- [x] Admin Staff Directory with search, filter, progress tracking, path assignment
+- [x] Admin Path Builder with drag-and-drop module ordering (@dnd-kit)
+- [x] Admin Staff Directory with search, filter, email display, edit/delete/invite
+- [x] Staff invite system with temporary password generation and credential copying
 - [x] Staff Dashboard with greeting, progress bar, locked/unlocked modules
-- [x] Immersive Module Reader with section navigation and progress saving
+- [x] Immersive Module Reader with section navigation, formatted text (lists, headings, paragraphs), progress saving
 - [x] 10-Question Exam Engine with strict 100% pass rule
-- [x] Certificate Page with PDF download and admin revoke capability
+- [x] Certificate Page with PDF download and permanent delete (removes from both admin and staff views)
 - [x] Resources Vault with emergency contacts, forms, and references
-- [x] Full seed data: 6 modules, 60 questions, 6 default paths, admin + 6 staff accounts
+- [x] Full seed data: 6 modules (48 content sections), 60 questions, 6 default paths, admin + 6 staff accounts
 - [x] PDF certificate generation with ReportLab (Dr. Drousiotis signature)
-- [x] All backend API endpoints functional (19 endpoints)
+- [x] All backend API endpoints functional (22 endpoints)
 - [x] Responsive design (mobile + desktop)
 
 ## Prioritized Backlog

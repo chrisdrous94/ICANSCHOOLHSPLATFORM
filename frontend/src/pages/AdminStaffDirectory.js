@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import API from '../lib/api';
 import { toast } from 'sonner';
 import { Search, UserPlus, ChevronDown, Award, Edit2, Trash2, Mail, Copy, Check, Send } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 const ROLES = ['Teachers', 'Security Guards', 'Kitchen Staff', 'Extra-Curricular Staff', 'Reception Staff', 'First Aid Team'];
 
@@ -258,7 +258,7 @@ export default function AdminStaffDirectory() {
       {/* Add Staff Dialog */}
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent className="rounded-2xl border border-[#E8E8E8] bg-white max-w-md shadow-xl">
-          <DialogHeader><DialogTitle className="text-lg font-bold text-[#1A1A1A]">Add Staff Member</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-lg font-bold text-[#1A1A1A]">Add Staff Member</DialogTitle><DialogDescription className="sr-only">Add a new staff member to the platform</DialogDescription></DialogHeader>
           <div className="space-y-4 mt-2">
             <div>
               <label className="block text-xs font-semibold text-[#555] mb-1.5 uppercase tracking-wider">Full Name</label>
@@ -292,7 +292,7 @@ export default function AdminStaffDirectory() {
       {/* Edit Staff Dialog */}
       <Dialog open={showEdit} onOpenChange={setShowEdit}>
         <DialogContent className="rounded-2xl border border-[#E8E8E8] bg-white max-w-md shadow-xl">
-          <DialogHeader><DialogTitle className="text-lg font-bold text-[#1A1A1A]">Edit Staff Member</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-lg font-bold text-[#1A1A1A]">Edit Staff Member</DialogTitle><DialogDescription className="sr-only">Edit staff member details</DialogDescription></DialogHeader>
           <div className="space-y-4 mt-2">
             <div>
               <label className="block text-xs font-semibold text-[#555] mb-1.5 uppercase tracking-wider">Full Name</label>
@@ -321,7 +321,7 @@ export default function AdminStaffDirectory() {
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDelete} onOpenChange={setShowDelete}>
         <DialogContent className="rounded-2xl border border-[#E8E8E8] bg-white max-w-sm shadow-xl">
-          <DialogHeader><DialogTitle className="text-lg font-bold text-[#1A1A1A]">Remove Staff Member</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-lg font-bold text-[#1A1A1A]">Remove Staff Member</DialogTitle><DialogDescription className="sr-only">Confirm staff removal</DialogDescription></DialogHeader>
           <div className="mt-2">
             <p className="text-sm text-[#666] mb-1">Are you sure you want to remove:</p>
             <div className="p-3 rounded-xl bg-[#FFF3E0] mb-4">
@@ -344,7 +344,7 @@ export default function AdminStaffDirectory() {
       {/* Invite Staff Dialog */}
       <Dialog open={showInvite} onOpenChange={(open) => { setShowInvite(open); if (!open) setInviteResult(null); }}>
         <DialogContent className="rounded-2xl border border-[#E8E8E8] bg-white max-w-md shadow-xl">
-          <DialogHeader><DialogTitle className="text-lg font-bold text-[#1A1A1A]">Invite Staff to Platform</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-lg font-bold text-[#1A1A1A]">Invite Staff to Platform</DialogTitle><DialogDescription className="sr-only">Invite a new staff member</DialogDescription></DialogHeader>
           {!inviteResult ? (
             <div className="space-y-4 mt-2">
               <p className="text-xs text-[#999]">Create an account and generate login credentials to share with the new staff member.</p>

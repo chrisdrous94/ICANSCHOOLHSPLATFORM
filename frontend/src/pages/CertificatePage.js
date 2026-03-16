@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import API from '../lib/api';
 import { toast } from 'sonner';
 import { Award, Download, Trash2, Calendar, User, Clock, AlertTriangle } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 export default function CertificatePage() {
   const { user } = useAuth();
@@ -141,7 +141,7 @@ export default function CertificatePage() {
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDelete} onOpenChange={setShowDelete}>
         <DialogContent className="rounded-2xl border border-[#E8E8E8] bg-white max-w-sm shadow-xl">
-          <DialogHeader><DialogTitle className="text-lg font-bold text-[#1A1A1A]">Delete Certificate</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-lg font-bold text-[#1A1A1A]">Delete Certificate</DialogTitle><DialogDescription className="sr-only">Confirm certificate deletion</DialogDescription></DialogHeader>
           <div className="mt-2">
             <div className="flex items-start gap-3 p-3 rounded-xl bg-[#FFEBEE] mb-4">
               <AlertTriangle className="w-5 h-5 text-[#D32F2F] flex-shrink-0 mt-0.5" />
