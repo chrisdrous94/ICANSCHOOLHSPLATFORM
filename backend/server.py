@@ -78,6 +78,13 @@ class CertExpiryUpdate(BaseModel):
     path_id: str
     expiry_days: int
 
+class CodeLogin(BaseModel):
+    code: str
+
+class GenerateCode(BaseModel):
+    user_id: str
+    label: str = ""
+
 # --- Auth Helpers ---
 def hash_password(pw: str) -> str:
     return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
@@ -146,6 +153,23 @@ async def login(data: UserLogin):
     token = create_token(user["id"], user["role"])
     return {"token": token, "user": {k: v for k, v in user.items() if k != "password_hash"}}
 
+@api_router.post("/auth/login-code")
+async def login_with_code(data: CodeLogin):
+    code_doc = await db.login_codes.find_one({"code": data.code.strip().upper(), "is_active": True}, {"_id": 0})
+    if not code_doc:
+        raise HTTPException(status_code=401, detail="Invalid or expired code")
+    if code_doc.get("expires_at") and code_doc["expires_at"] < datetime.now(timezone.utc).isoformat():
+        await db.login_codes.update_one({"code": code_doc["code"]}, {"$set": {"is_active": False}})
+        raise HTTPException(status_code=401, detail="Code has expired")
+    user = await db.users.find_one({"id": code_doc["user_id"]}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=401, detail="Account is deactivated")
+    await db.login_codes.update_one({"code": code_doc["code"]}, {"$set": {"last_used": datetime.now(timezone.utc).isoformat(), "use_count": code_doc.get("use_count", 0) + 1}})
+    token = create_token(user["id"], user["role"])
+    return {"token": token, "user": {k: v for k, v in user.items() if k != "password_hash"}}
+
 @api_router.get("/auth/me")
 async def get_me(user: dict = Depends(get_current_user)):
     return {k: v for k, v in user.items() if k != "password_hash"}
@@ -199,6 +223,47 @@ async def delete_user(user_id: str, admin: dict = Depends(require_admin)):
 async def assign_path(data: AssignPath, admin: dict = Depends(require_admin)):
     await db.users.update_one({"id": data.user_id}, {"$set": {"assigned_path_id": data.path_id}})
     return {"message": "Path assigned"}
+
+# --- Login Code Management (Admin) ---
+@api_router.post("/users/{user_id}/generate-code")
+async def generate_login_code(user_id: str, admin: dict = Depends(require_admin)):
+    import secrets
+    import string
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    charset = string.ascii_uppercase + string.digits
+    code = ''.join(secrets.choice(charset) for _ in range(6))
+    while await db.login_codes.find_one({"code": code}):
+        code = ''.join(secrets.choice(charset) for _ in range(6))
+    now = datetime.now(timezone.utc)
+    code_doc = {
+        "id": str(uuid.uuid4()),
+        "code": code,
+        "user_id": user_id,
+        "user_name": user["name"],
+        "user_email": user.get("email", ""),
+        "created_by": admin["id"],
+        "created_at": now.isoformat(),
+        "expires_at": (now + timedelta(days=90)).isoformat(),
+        "is_active": True,
+        "use_count": 0,
+        "last_used": None
+    }
+    await db.login_codes.insert_one(code_doc)
+    return {k: v for k, v in code_doc.items() if k != "_id"}
+
+@api_router.get("/login-codes")
+async def list_login_codes(admin: dict = Depends(require_admin)):
+    codes = await db.login_codes.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return codes
+
+@api_router.delete("/login-codes/{code_id}")
+async def revoke_login_code(code_id: str, admin: dict = Depends(require_admin)):
+    result = await db.login_codes.update_one({"id": code_id}, {"$set": {"is_active": False}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Code not found")
+    return {"message": "Code deactivated"}
 
 # --- Module Routes ---
 @api_router.get("/modules")

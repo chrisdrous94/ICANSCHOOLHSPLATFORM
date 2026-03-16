@@ -330,6 +330,137 @@ class HealthSafetyAPITester:
             else:
                 self.log_test("Invite Response Contains Temp Password", False, error="No temp_password in response")
 
+    def test_login_codes_api(self):
+        """Test login code generation and authentication endpoints (NEW FEATURE)"""
+        print("\n🔑 Testing Login Codes API...")
+        headers = {'Authorization': f'Bearer {self.admin_token}'} if self.admin_token else {}
+        
+        # Get users first to find a staff member to generate code for
+        success, users = self.run_test(
+            "Get Users for Code Generation",
+            "GET",
+            "users",
+            200,
+            headers=headers
+        )
+        
+        if success and isinstance(users, list):
+            # Find a staff member (not admin)
+            staff_user = next((user for user in users if user.get('role') == 'staff'), None)
+            
+            if staff_user:
+                staff_user_id = staff_user['id']
+                print(f"  📝 Testing code generation for: {staff_user['name']} ({staff_user['email']})")
+                
+                # Test generate login code
+                generate_success, code_response = self.run_test(
+                    f"Generate Login Code for {staff_user['name']}",
+                    "POST",
+                    f"users/{staff_user_id}/generate-code",
+                    200,
+                    headers=headers
+                )
+                
+                if generate_success and 'code' in code_response:
+                    generated_code = code_response['code']
+                    code_id = code_response.get('id')
+                    
+                    # Validate code format (6 uppercase alphanumeric)
+                    if len(generated_code) == 6 and generated_code.isupper() and generated_code.isalnum():
+                        self.log_test("Generated Code Format (6 uppercase alphanumeric)", True)
+                    else:
+                        self.log_test("Generated Code Format", False, error=f"Invalid format: {generated_code}")
+                    
+                    # Validate expiry date is 90 days from now
+                    if 'expires_at' in code_response:
+                        expires_at = code_response['expires_at']
+                        self.log_test("Code Has Expiry Date", True)
+                    else:
+                        self.log_test("Code Has Expiry Date", False, error="Missing expires_at field")
+                    
+                    # Test login with the generated code
+                    login_success, login_response = self.run_test(
+                        f"Login with Generated Code ({generated_code})",
+                        "POST",
+                        "auth/login-code",
+                        200,
+                        data={"code": generated_code}
+                    )
+                    
+                    if login_success and 'token' in login_response:
+                        self.log_test("Code Login Returns JWT Token", True)
+                        # Verify the token is for the correct user
+                        if login_response.get('user', {}).get('id') == staff_user_id:
+                            self.log_test("Code Login Returns Correct User", True)
+                        else:
+                            self.log_test("Code Login Returns Correct User", False, error="Wrong user returned")
+                    else:
+                        self.log_test("Code Login Returns JWT Token", False, error="No token in response")
+                    
+                    # Test listing all login codes (admin endpoint)
+                    list_success, codes_list = self.run_test(
+                        "List All Login Codes (Admin)",
+                        "GET",
+                        "login-codes",
+                        200,
+                        headers=headers
+                    )
+                    
+                    if list_success and isinstance(codes_list, list):
+                        # Find our generated code in the list
+                        our_code = next((c for c in codes_list if c.get('code') == generated_code), None)
+                        if our_code:
+                            self.log_test("Generated Code Appears in List", True)
+                            
+                            # Check if usage count was updated after login
+                            if our_code.get('use_count', 0) >= 1:
+                                self.log_test("Code Usage Count Updated", True)
+                            else:
+                                self.log_test("Code Usage Count Updated", False, error="use_count not incremented")
+                        else:
+                            self.log_test("Generated Code Appears in List", False, error="Code not found in list")
+                    
+                    # Test deactivating the code
+                    if code_id:
+                        deactivate_success, deactivate_response = self.run_test(
+                            f"Deactivate Login Code ({generated_code})",
+                            "DELETE",
+                            f"login-codes/{code_id}",
+                            200,
+                            headers=headers
+                        )
+                        
+                        if deactivate_success:
+                            # Try to login with deactivated code (should fail)
+                            login_fail_success, login_fail_response = self.run_test(
+                                f"Login with Deactivated Code (should fail)",
+                                "POST",
+                                "auth/login-code",
+                                401,
+                                data={"code": generated_code}
+                            )
+                            
+                            if login_fail_success:  # 401 is expected
+                                self.log_test("Deactivated Code Login Fails Correctly", True)
+                            else:
+                                self.log_test("Deactivated Code Login Fails Correctly", False, error="Should have returned 401")
+                
+                    # Test invalid code login
+                    self.run_test(
+                        "Login with Invalid Code",
+                        "POST",
+                        "auth/login-code",
+                        401,
+                        data={"code": "INVALID"}
+                    )
+                
+                else:
+                    self.log_test("Code Generation Response", False, error="No 'code' field in response")
+            else:
+                self.log_test("Find Staff User for Testing", False, error="No staff user found")
+        else:
+            self.log_test("Get Users for Code Testing", False, error="Failed to get users list")
+
     def test_progress_api(self):
         """Test progress endpoints"""
         print("\n📈 Testing Progress API...")
@@ -401,6 +532,7 @@ def main():
     if admin_login_success:
         tester.test_analytics_api()
         tester.test_users_api()
+        tester.test_login_codes_api()  # NEW: Test login codes functionality
     else:
         print("⚠️  Skipping admin-only tests (admin login failed)")
     

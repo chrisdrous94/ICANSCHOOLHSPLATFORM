@@ -26,6 +26,14 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
+  const loginWithCode = useCallback(async (code) => {
+    const { data } = await API.post('/auth/login-code', { code });
+    localStorage.setItem('ican_token', data.token);
+    localStorage.setItem('ican_user', JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user;
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('ican_token');
     localStorage.removeItem('ican_user');
@@ -33,7 +41,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, setUser }}>
+    <AuthContext.Provider value={{ user, login, loginWithCode, logout, loading, setUser }}>
       {children}
     </AuthContext.Provider>
   );

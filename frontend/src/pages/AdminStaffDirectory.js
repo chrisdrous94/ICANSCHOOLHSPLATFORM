@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import API from '../lib/api';
 import { toast } from 'sonner';
-import { Search, UserPlus, ChevronDown, Award, Edit2, Trash2, Mail, Copy, Check, Send } from 'lucide-react';
+import { Search, UserPlus, ChevronDown, Award, Edit2, Trash2, Mail, Copy, Check, Send, KeyRound, ShieldOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 const ROLES = ['Teachers', 'Security Guards', 'Kitchen Staff', 'Extra-Curricular Staff', 'Reception Staff', 'First Aid Team'];
@@ -16,8 +16,10 @@ export default function AdminStaffDirectory() {
   const [showEdit, setShowEdit] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showCode, setShowCode] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [inviteResult, setInviteResult] = useState(null);
+  const [codeResult, setCodeResult] = useState(null);
   const [copied, setCopied] = useState(false);
   const [newStaff, setNewStaff] = useState({ name: '', email: '', staff_category: 'Teachers', password: 'staff123' });
   const [editData, setEditData] = useState({ name: '', email: '', staff_category: '' });
@@ -100,6 +102,29 @@ export default function AdminStaffDirectory() {
   const openDelete = (s) => {
     setSelectedStaff(s);
     setShowDelete(true);
+  };
+
+  const openCode = (s) => {
+    setSelectedStaff(s);
+    setCodeResult(null);
+    setCopied(false);
+    setShowCode(true);
+  };
+
+  const generateCode = async () => {
+    try {
+      const { data } = await API.post(`/users/${selectedStaff.id}/generate-code`);
+      setCodeResult(data);
+      toast.success('Login code generated');
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to generate code'); }
+  };
+
+  const copyCode = () => {
+    if (codeResult) {
+      navigator.clipboard.writeText(codeResult.code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const filtered = staff.filter(s => {
@@ -228,6 +253,14 @@ export default function AdminStaffDirectory() {
                     </td>
                     <td className="px-4">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => openCode(s)}
+                          className="p-2 rounded-lg hover:bg-[#FFF3E0] text-[#FF8100] transition-colors"
+                          title="Generate Login Code"
+                          data-testid={`code-staff-${s.id}`}
+                        >
+                          <KeyRound className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => openEdit(s)}
                           className="p-2 rounded-lg hover:bg-[#E3F2FD] text-[#1976D2] transition-colors"
@@ -386,6 +419,55 @@ export default function AdminStaffDirectory() {
                 {copied ? 'Copied to Clipboard!' : 'Copy Credentials'}
               </button>
               <p className="text-xs text-[#999] text-center">Share these credentials securely with the staff member</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Generate Login Code Dialog */}
+      <Dialog open={showCode} onOpenChange={(open) => { setShowCode(open); if (!open) { setCodeResult(null); setCopied(false); } }}>
+        <DialogContent className="rounded-2xl border border-[#E8E8E8] bg-white max-w-md shadow-xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-[#1A1A1A]">Generate Login Code</DialogTitle>
+            <DialogDescription className="sr-only">Generate a unique login code for a staff member</DialogDescription>
+          </DialogHeader>
+          {!codeResult ? (
+            <div className="mt-2 space-y-4">
+              <p className="text-sm text-[#666]">
+                Generate a unique 6-character code for <span className="font-semibold text-[#222]">{selectedStaff?.name}</span> to log in without a password.
+              </p>
+              <div className="p-3 rounded-xl bg-[#FAFAFA] border border-[#F0F0F0]">
+                <div className="text-sm font-semibold text-[#222]">{selectedStaff?.name}</div>
+                <div className="text-xs text-[#999]">{selectedStaff?.email} &middot; {selectedStaff?.staff_category}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-[#FFF3E0] text-xs text-[#E65100]">
+                Codes are valid for 90 days and can be used multiple times. You can generate multiple codes per staff member.
+              </div>
+              <button onClick={generateCode} className="w-full py-3 rounded-xl bg-[#FF8100] text-white font-semibold text-sm hover:bg-[#E67300] transition-all shadow-md shadow-[#FF8100]/15 flex items-center justify-center gap-2" data-testid="confirm-generate-code">
+                <KeyRound className="w-4 h-4" /> Generate Code
+              </button>
+            </div>
+          ) : (
+            <div className="mt-2 space-y-4" data-testid="code-result">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-[#E8F5E9]">
+                <Check className="w-5 h-5 text-[#2E7D32]" />
+                <span className="text-sm font-semibold text-[#2E7D32]">Login code generated for {selectedStaff?.name}</span>
+              </div>
+              <div className="text-center py-5">
+                <p className="text-[10px] text-[#999] font-semibold uppercase tracking-widest mb-3">Login Code</p>
+                <div className="inline-block bg-[#1A1A1A] rounded-2xl px-8 py-4">
+                  <span className="text-white text-3xl font-mono font-bold tracking-[0.35em]" data-testid="generated-code">{codeResult.code}</span>
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-[#FAFAFA] border border-[#F0F0F0] space-y-1.5">
+                <div className="text-xs"><span className="text-[#999]">For:</span> <span className="text-[#222] font-medium">{codeResult.user_name}</span></div>
+                <div className="text-xs"><span className="text-[#999]">Valid until:</span> <span className="text-[#222] font-medium">{new Date(codeResult.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span></div>
+              </div>
+              <button onClick={copyCode} className="w-full py-3 rounded-xl bg-[#222] text-white font-semibold text-sm hover:bg-[#333] transition-all flex items-center justify-center gap-2" data-testid="copy-login-code">
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? 'Copied!' : 'Copy Code'}
+              </button>
+              <p className="text-xs text-[#999] text-center">Share this code with the staff member so they can sign in</p>
             </div>
           )}
         </DialogContent>
