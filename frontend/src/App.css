@@ -1,34 +1,165 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* M3 Custom Styles */
+.m3-card {
+  border-radius: 28px;
+  background: #F0F5F1;
+  padding: 1.5rem;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  border: none;
+}
+.m3-card:hover {
+  background: #E8F0EB;
+}
+.m3-card-elevated {
+  border-radius: 28px;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  border: none;
+}
+.m3-card-elevated:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+}
+.m3-btn-filled {
+  border-radius: 9999px;
+  background: #006C4C;
+  color: white;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+.m3-btn-filled:hover {
+  background: #005239;
+  box-shadow: 0 1px 3px rgba(0,108,76,0.3);
+}
+.m3-btn-filled:active {
+  transform: scale(0.97);
+}
+.m3-btn-tonal {
+  border-radius: 9999px;
+  background: #D0E8D8;
+  color: #092016;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+.m3-btn-tonal:hover {
+  background: #BCE0C8;
+}
+.m3-btn-tonal:active {
+  transform: scale(0.97);
+}
+.m3-btn-outlined {
+  border-radius: 9999px;
+  border: 1.5px solid #707973;
+  background: transparent;
+  color: #006C4C;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.m3-btn-outlined:hover {
+  background: #F0F5F1;
+}
+.m3-surface-1 { background: #F0F5F1; }
+.m3-surface-2 { background: #E8F0EB; }
+.m3-surface-3 { background: #E0EBE5; }
+.m3-on-surface { color: #191C1A; }
+.m3-on-surface-variant { color: #404944; }
+.m3-primary { color: #006C4C; }
+.m3-primary-container { background: #89F8C6; }
+.m3-error-container { background: #FFDAD6; }
+.m3-tertiary-container { background: #C0E9FA; }
+
+/* Sidebar */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 9999px;
+  color: #404944;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+.sidebar-link:hover {
+  background: #F0F5F1;
+}
+.sidebar-link.active {
+  background: #C0E9FA;
+  color: #001F28;
+  font-weight: 700;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Status pills */
+.pill-success {
+  background: #D0E8D8;
+  color: #092016;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.pill-warning {
+  background: #FFDAD6;
+  color: #410002;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.pill-neutral {
+  background: #E0EBE5;
+  color: #404944;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.pill-info {
+  background: #C0E9FA;
+  color: #001F28;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+/* Progress bar */
+.m3-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #DBE5DE;
+  overflow: hidden;
+}
+.m3-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #006C4C;
+  transition: width 0.5s ease;
 }
 
-.App-link {
-    color: #61dafb;
+/* Reader mode */
+.reader-content p {
+  margin-bottom: 1rem;
+  line-height: 1.8;
 }
-
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.reader-content h3 {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #006C4C;
 }

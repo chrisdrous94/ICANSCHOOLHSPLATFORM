@@ -1,53 +1,54 @@
-import { useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { Toaster } from "sonner";
+import LoginPage from "./pages/LoginPage";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminPathBuilder from "./pages/AdminPathBuilder";
+import AdminStaffDirectory from "./pages/AdminStaffDirectory";
+import StaffDashboard from "./pages/StaffDashboard";
+import ModuleReader from "./pages/ModuleReader";
+import ExamPage from "./pages/ExamPage";
+import CertificatePage from "./pages/CertificatePage";
+import ResourcesVault from "./pages/ResourcesVault";
+import Layout from "./components/Layout";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+function ProtectedRoute({ children, adminOnly }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="text-[#006C4C] text-lg font-semibold">Loading...</div></div>;
+  if (!user) return <Navigate to="/" replace />;
+  if (adminOnly && user.role !== "admin") return <Navigate to="/dashboard" replace />;
+  return children;
+}
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+function AppRoutes() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/" element={user ? <Navigate to={user.role === "admin" ? "/admin" : "/dashboard"} replace /> : <LoginPage />} />
+      <Route path="/admin" element={<ProtectedRoute adminOnly><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
+      <Route path="/admin/paths" element={<ProtectedRoute adminOnly><Layout><AdminPathBuilder /></Layout></ProtectedRoute>} />
+      <Route path="/admin/staff" element={<ProtectedRoute adminOnly><Layout><AdminStaffDirectory /></Layout></ProtectedRoute>} />
+      <Route path="/admin/certificates" element={<ProtectedRoute adminOnly><Layout><CertificatePage /></Layout></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><Layout><StaffDashboard /></Layout></ProtectedRoute>} />
+      <Route path="/module/:moduleId" element={<ProtectedRoute><Layout><ModuleReader /></Layout></ProtectedRoute>} />
+      <Route path="/exam" element={<ProtectedRoute><Layout><ExamPage /></Layout></ProtectedRoute>} />
+      <Route path="/certificates" element={<ProtectedRoute><Layout><CertificatePage /></Layout></ProtectedRoute>} />
+      <Route path="/resources" element={<ProtectedRoute><Layout><ResourcesVault /></Layout></ProtectedRoute>} />
+    </Routes>
   );
-};
+}
 
 function App() {
   return (
-    <div className="App">
+    <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <Toaster position="top-right" richColors closeButton />
+        <AppRoutes />
       </BrowserRouter>
-    </div>
+    </AuthProvider>
   );
 }
 
