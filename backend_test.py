@@ -245,13 +245,26 @@ class HealthSafetyAPITester:
             cert_id = certificates[0].get('id')
             if cert_id:
                 # Test download endpoint (may return 404 if no valid cert)
-                self.run_test(
+                download_success, download_response = self.run_test(
                     "Test Certificate Download Endpoint",
                     "GET",
                     f"certificates/{cert_id}/download",
-                    [200, 404, 400],  # Multiple valid status codes
+                    200,
                     headers=headers
                 )
+                if download_success and isinstance(download_response, str) and download_response.startswith('%PDF'):
+                    self.log_test("Certificate PDF Generation", True)
+                
+                # Test certificate deletion (admin only - NEW endpoint)
+                admin_headers = {'Authorization': f'Bearer {self.admin_token}'} if self.admin_token else {}
+                if self.admin_token:
+                    self.run_test(
+                        "Delete Certificate (Admin)",
+                        "DELETE",
+                        f"certificates/{cert_id}",
+                        200,
+                        headers=admin_headers
+                    )
 
     def test_users_api(self):
         """Test user management endpoints (admin only)"""
@@ -268,6 +281,54 @@ class HealthSafetyAPITester:
         
         if success and isinstance(users, list):
             self.log_test(f"Users List Retrieved ({len(users)} users)", True)
+            
+            # Test staff invitation (NEW endpoint)
+            invite_data = {
+                "name": "Test Staff Member",
+                "email": f"teststaff_{datetime.now().strftime('%H%M%S')}@icanschool.com",
+                "staff_category": "Teachers"
+            }
+            
+            invite_success, invite_response = self.run_test(
+                "Invite Staff Member",
+                "POST",
+                "users/invite",
+                200,
+                data=invite_data,
+                headers=headers
+            )
+            
+            if invite_success and 'temp_password' in invite_response:
+                self.log_test("Invite Response Contains Temp Password", True)
+                invited_user_id = invite_response.get('user_id')
+                
+                # Test edit staff member (NEW endpoint)
+                if invited_user_id:
+                    edit_data = {
+                        "name": "Updated Test Staff",
+                        "email": invite_data['email'],
+                        "staff_category": "Security Guards"
+                    }
+                    
+                    self.run_test(
+                        "Edit Staff Member",
+                        "PUT",
+                        f"users/{invited_user_id}/edit",
+                        200,
+                        data=edit_data,
+                        headers=headers
+                    )
+                    
+                    # Test delete staff member (NEW endpoint)
+                    self.run_test(
+                        "Delete Staff Member",
+                        "DELETE",
+                        f"users/{invited_user_id}",
+                        200,
+                        headers=headers
+                    )
+            else:
+                self.log_test("Invite Response Contains Temp Password", False, error="No temp_password in response")
 
     def test_progress_api(self):
         """Test progress endpoints"""

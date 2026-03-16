@@ -353,8 +353,7 @@ async def submit_exam(data: ExamSubmit, user: dict = Depends(get_current_user)):
             "path_name": path["name"] if path else "Unknown",
             "target_role": category,
             "issued_at": now,
-            "expires_at": (datetime.now(timezone.utc) + timedelta(days=expiry_days)).isoformat(),
-            "is_revoked": False
+            "expires_at": (datetime.now(timezone.utc) + timedelta(days=expiry_days)).isoformat()
         }
         await db.certificates.insert_one(cert_doc)
         result["certificate_id"] = cert_doc["id"]
@@ -384,8 +383,6 @@ async def download_certificate(cert_id: str):
     cert = await db.certificates.find_one({"id": cert_id}, {"_id": 0})
     if not cert:
         raise HTTPException(status_code=404, detail="Certificate not found")
-    if cert.get("is_revoked"):
-        raise HTTPException(status_code=400, detail="Certificate has been revoked")
     buffer = io.BytesIO()
     width, height = landscape(A4)
     c = canvas.Canvas(buffer, pagesize=landscape(A4))
@@ -456,16 +453,78 @@ async def download_certificate(cert_id: str):
 
 @api_router.delete("/certificates/{cert_id}")
 async def revoke_certificate(cert_id: str, admin: dict = Depends(require_admin)):
-    result = await db.certificates.update_one({"id": cert_id}, {"$set": {"is_revoked": True}})
-    if result.matched_count == 0:
+    result = await db.certificates.delete_one({"id": cert_id})
+    if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Certificate not found")
-    return {"message": "Certificate revoked"}
+    return {"message": "Certificate deleted"}
+
+# --- Staff Edit Route ---
+class StaffUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    staff_category: Optional[str] = None
+    is_active: Optional[bool] = None
+
+@api_router.put("/users/{user_id}/edit")
+async def edit_staff(user_id: str, data: StaffUpdate, admin: dict = Depends(require_admin)):
+    updates = {k: v for k, v in data.model_dump(exclude_none=True).items()}
+    if not updates:
+        raise HTTPException(status_code=400, detail="No updates provided")
+    if "email" in updates:
+        existing = await db.users.find_one({"email": updates["email"], "id": {"$ne": user_id}})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use")
+    if "staff_category" in updates:
+        path = await db.learning_paths.find_one({"target_role": updates["staff_category"]}, {"_id": 0})
+        if path:
+            updates["assigned_path_id"] = path["id"]
+    await db.users.update_one({"id": user_id}, {"$set": updates})
+    updated = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    return updated
+
+# --- Invite Staff Route ---
+class InviteStaff(BaseModel):
+    email: str
+    name: str
+    staff_category: str
+
+@api_router.post("/users/invite")
+async def invite_staff(data: InviteStaff, admin: dict = Depends(require_admin)):
+    existing = await db.users.find_one({"email": data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    import secrets
+    temp_password = secrets.token_urlsafe(8)
+    role_to_path = {}
+    paths = await db.learning_paths.find({}, {"_id": 0}).to_list(100)
+    for p in paths:
+        role_to_path[p["target_role"]] = p["id"]
+    user_doc = {
+        "id": str(uuid.uuid4()),
+        "email": data.email,
+        "password_hash": hash_password(temp_password),
+        "name": data.name,
+        "role": "staff",
+        "staff_category": data.staff_category,
+        "assigned_path_id": role_to_path.get(data.staff_category),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "is_active": True,
+        "invited": True
+    }
+    await db.users.insert_one(user_doc)
+    return {
+        "message": f"Staff invited successfully",
+        "user_id": user_doc["id"],
+        "temp_password": temp_password,
+        "email": data.email,
+        "name": data.name
+    }
 
 # --- Analytics Routes (Admin) ---
 @api_router.get("/analytics/overview")
 async def analytics_overview(admin: dict = Depends(require_admin)):
     total_staff = await db.users.count_documents({"role": "staff"})
-    total_certs = await db.certificates.count_documents({"is_revoked": False})
+    total_certs = await db.certificates.count_documents({})
     total_attempts = await db.exam_attempts.count_documents({})
     passed_attempts = await db.exam_attempts.count_documents({"passed": True})
     categories = await db.users.aggregate([
@@ -475,7 +534,6 @@ async def analytics_overview(admin: dict = Depends(require_admin)):
     cat_stats = {c["_id"]: c["count"] for c in categories if c["_id"]}
     now = datetime.now(timezone.utc)
     expiring_soon = await db.certificates.count_documents({
-        "is_revoked": False,
         "expires_at": {"$lte": (now + timedelta(days=30)).isoformat(), "$gt": now.isoformat()}
     })
     return {
@@ -501,7 +559,7 @@ async def staff_progress_analytics(admin: dict = Depends(require_admin)):
         total_modules = len(path["module_ids"]) if path else 6
         pct = round((completed / total_modules * 100) if total_modules > 0 else 0, 1)
         attempts = await db.exam_attempts.count_documents({"user_id": s["id"]})
-        cert = await db.certificates.find_one({"user_id": s["id"], "is_revoked": False}, {"_id": 0}, sort=[("issued_at", -1)])
+        cert = await db.certificates.find_one({"user_id": s["id"]}, {"_id": 0}, sort=[("issued_at", -1)])
         result.append({
             **s,
             "modules_completed": completed,
